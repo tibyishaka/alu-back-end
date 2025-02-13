@@ -4,18 +4,18 @@
 import requests
 import sys
 
-
 """Module"""
 
 if __name__ == '__main__':
-    user_id = sys.argv[1]
+    """IF SCRIPT IS NOT RUN AS MODULE"""
+    employee_id = sys.argv[1]
     user_url = "https://jsonplaceholder.typicode.com/users/{}" \
-        .format(user_id)
+        .format(employee_id)
     todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
-        .format(user_id)
+        .format(employee_id)
 
-    user_info = requests.request('GET', user_url).json()
-    todos_info = requests.request('GET', todos_url).json()
+    user_info = requests.get(user_url).json()
+    todos_info = requests.get(todos_url).json()
 
     employee_name = user_info["name"]
     task_completed = list(filter(lambda obj:
