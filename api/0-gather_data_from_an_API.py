@@ -1,35 +1,27 @@
 #!/usr/bin/python3
-"""Script that retrieves an employee's TODO list progress from an API."""
+"""Module"""
 
 import requests
 import sys
 
+
+"""Module"""
+
 if __name__ == '__main__':
-    # Retrieve the employee ID from the command line arguments
-    employee_id = sys.argv[1]
+    user_id = sys.argv[1]
+    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
+    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/".format(user_id)
 
-    # Build the URLs to fetch user information and TODO list data
-    user_url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
-    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos".format(employee_id)
+    user_info = requests.request('GET', user_url).json()
+    todos_info = requests.request('GET', todos_url).json()
 
-    # Request data from the API endpoints
-    user_response = requests.get(user_url)
-    todos_response = requests.get(todos_url)
-
-    # Parse the JSON responses
-    user_info = user_response.json()
-    todos_info = todos_response.json()
-
-    # Extract employee name, total tasks and completed tasks
     employee_name = user_info["name"]
-    total_tasks = len(todos_info)
-    completed_tasks = [task for task in todos_info if task.get("OK") is True]
-    number_of_completed_tasks = len(completed_tasks)
+    task_completed = list(filter(lambda obj:
+                                 (obj["completed"] is True), todos_info))
+    number_of_done_tasks = len(task_completed)
+    total_number_of_tasks = len(todos_info)
 
-    # Print out the progress summary
-    print("Employee {} is done with tasks({}/{}):".format(
-        employee_name, number_of_completed_tasks, total_tasks))
+    print("Employee {} is done with tasks({}/{}):".
+          format(employee_name, number_of_done_tasks, total_number_of_tasks))
 
-    # Print the title of each completed task with a tab and a space
-    for task in completed_tasks:
-        print("\t " + task["title"])
+    [print("\t " + task["title"]) for task in task_completed]
