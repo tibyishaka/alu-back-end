@@ -1,37 +1,52 @@
 #!/usr/bin/python3
-''' Test request to parse API's
-'''
-
-
-import csv
+"""
+Python script that exports data in the JSON format
+"""
 import json
 import requests
-import sys
+
+
+def get_all_users():
+    """
+    Get the list of all users
+    """
+    url = "https://jsonplaceholder.typicode.com/users"
+    response = requests.get(url)
+    return response.json()
+
+
+def get_user_todos(user_id):
+    """
+    Get the TODO list for a given user ID
+    """
+    url = "https://jsonplaceholder.typicode.com/todos"
+    response = requests.get(url, params={"userId": user_id})
+    return response.json()
+
+
+def export_all_todos_to_json(users):
+    """
+    Export all users' TODO lists to a JSON file
+    """
+    data = {
+        user["id"]: [
+            {
+                "task": todo["title"],
+                "completed": todo["completed"],
+                "username": user["username"]
+            } for todo in get_user_todos(user["id"])
+        ] for user in users
+    }
+    with open("todo_all_employees.json", "w") as jsonfile:
+        json.dump(data, jsonfile)
+
+
+def main():
+    """
+    Main function to fetch users and their TODO lists, then export to JSON
+    """
+    users = get_all_users()
+    export_all_todos_to_json(users)
 
 if __name__ == "__main__":
-    api_endpoint = "https://jsonplaceholder.typicode.com"
-
-    def get_user_tasks(id):
-        '''Return data for the user id passed as an argument
-        '''
-        user_id = str(id)
-        user_data = requests.get(api_endpoint + "/users/" + user_id).json()
-        username = user_data.get('username')
-        todo_data = \
-            requests.get(api_endpoint + "/users/" + user_id + "/todos").\
-            json()
-        tasks = []
-        for task in todo_data:
-            tasks.append({'username': username,
-                          'task': task['title'],
-                          'completed': task['completed']})
-        data = {"{}".format(user_id): tasks}
-        return data
-
-    all_users = requests.get(api_endpoint + "/users").json()
-    all_json = {}
-    for user in all_users:
-        user_data = get_user_tasks(user.get('id'))
-        all_json.update(user_data)
-    with open("todo_all_employees.json", 'w') as data_file:
-        json.dump(all_json, data_file)
+    main()
